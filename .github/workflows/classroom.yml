@@ -24,7 +24,6 @@ jobs:
                 pip install jupyter
                 pip install numpy
                 pip install matplotlib
-                pip install platform
 
         - name: Run Jupyter Notebook
           run: |
