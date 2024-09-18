@@ -1,39 +1,31 @@
-name: Programmig Assignment check
-
-on:
-    push:
-        branches:
-            - main
-
+name: Autograding Tests
+'on':
+- workflow_dispatch
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
 jobs:
-    check:
-        runs-on: ubuntu-latest
-
-        steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
-
-        - name: Set up Python
-          uses: actions/setup-python@v5
-          with:
-              python-version: 3.12
-
-        - name: Install dependencies
-          run: |
-                python -m pip install --upgrade pip
-                pip install jupyter
-                pip install numpy
-                pip install matplotlib
-
-        - name: Run Jupyter Notebook
-          run: |
-                jupyter nbconvert --execute PA_1_3_Data_Cleaning_and_Boosting_Productivity.ipynb --to html
-
-        - name: Check for errors
-          run: |
-                if [ -f PA_1_3_Data_Cleaning_and_Boosting_Productivity.html ]; then
-                    echo "No errors found."
-                else
-                    echo "Errors found."
-                    exit 1
-                fi
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: test
+      id: test
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: test
+        setup-command: python -m pip install --upgrade pip; pip install jupyter numpy
+          matplotlib
+        command: jupyter nbconvert --execute PA_1_3_Data_Cleaning_and_Boosting_Productivity.ipynb
+          --to html
+        timeout: 10
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        TEST_RESULTS: "${{steps.test.outputs.result}}"
+      with:
+        runners: test
